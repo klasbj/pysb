@@ -170,7 +170,7 @@ class DwmLtArea(Area):
                 , (re.compile(r'\[.*\]'), get_image(os.path.join(bindir, 'maximized.xpm')))
                 , (re.compile(r'><>'), get_image(os.path.join(bindir, 'floating.xpm')))
                 ]
-        self.data = self.imgs[0]
+        self.data = self.imgs[0][1]
 
     def set_text(self, text):
         for r, i in self.imgs:
@@ -301,17 +301,22 @@ class InputHandler(QObject):
 
 area_map = {}
 def handle_input(line):
+    args = line.split(' ')
+    if len(args) < 2:
+        return
     #print("handle line '{}'".format(line), file=sys.stderr)
-    cmd, args = line.split(' ', maxsplit=1)
+    cmd, args = args[0], args[1:]
     if cmd == 'text':
-        area, text = args.split(' ', maxsplit=1)
+        area = args[0]
+        text = ' '.join(args[1:]) if len(args) > 1 else ''
         if area in area_map:
             area_map[area].set_text(text)
         else:
             print('Unknown area:', area, file=sys.stderr)
     elif cmd == 'add_area':
         # add_area id screen TOP|BOTTOM weight LEFT|RIGHT|CENTER [type]
-        args = args.split(' ')
+        if len(args) < 5:
+            print('Too few arguments to add_area: ', args, file=sys.stderr)
         id_, screen, dock, weight, floatd = args[:5]
         screen = int(screen)
         try:
