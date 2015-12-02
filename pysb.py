@@ -22,8 +22,6 @@ BAR_HEIGHT = 15
 NORMAL_FG_COLOR = "#9e9e9e"
 LOW_FG_COLOR = "#4e4e4e"
 
-
-
 timer = None
 bars = []
 
@@ -268,10 +266,6 @@ IMAGE_CACHE = dict()
 def get_image(path):
     if not path in IMAGE_CACHE:
         i = QImage(path)
-        #i.setColor(1, QColor(0,0,0,0).rgba())
-        #i.setColor(2, QColor('#9e9e9e').rgba())
-        #if i.colorCount() > 2:
-        #    i.setColor(3, QColor('#3d3dff').rgba())
         IMAGE_CACHE[path] = i
     return IMAGE_CACHE[path]
 
@@ -466,28 +460,6 @@ class Bar(QWidget):
                 first = False
                 a.render(painter, sx, y, h)
                 sx += a.width(painter) + 8
-
-
-        #if self.text:
-        #    da = DwmArea()
-        #    da.set_text(self.text)
-        #    da.render(painter, 0, 0, self.rect().height())
-
-        #rx = paint_clock(painter, self.rect().right(), 0, self.rect().height())
-
-        #s = "ksjdnf ^i(/home/klasse/wm/statusbars/images/snd-2.xpm) ^i(/home/klasse/wm/statusbars/images/snd-m.xpm) skjadf sd"
-        #a = Area(floatd=Area.FLOAT_RIGHT, weight=100)
-        #a.set_text(s)
-
-        #w = a.width(painter)
-        #rx -= 18 + w + 16
-        #tx, _ = painter.draw_hlsection(rx, 0, w, self.rect().height(), floatd=a.floatd)
-        #a.render(painter, tx, 0, self.rect().height())
-
-
-
-
-
 
 def main():
     app = QApplication(sys.argv)

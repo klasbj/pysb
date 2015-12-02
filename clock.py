@@ -60,11 +60,8 @@ def get_time():
     t = (3600*time.hour + 60*time.minute + time.second + 1e-6*time.microsecond)/(24*60*60)
     t = 1.0 - ((t*8) % 1)
     c = time_to_color(t)
-    #print('^bg({}){:02}:{:02}:{:02}'.format(c, time.hour, time.minute, time.second))
     return (c, time.strftime("%a %Y-%m-%d %H:%M:%S"))
-    print('^fg(#9e9e9e)^bg({})'.format(c))
 
 if __name__ == '__main__':
     c, s = get_time()
-    #print('^bg({}){:02}:{:02}:{:02}'.format(c, time.hour, time.minute, time.second))
     print('^fg(#9e9e9e)^bg({})'.format(c))
