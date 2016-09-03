@@ -3,6 +3,7 @@
 import os
 import re
 import sys
+import locale
 import signal
 import select
 from enum import IntEnum, unique
@@ -274,9 +275,11 @@ class InputHandler(QObject):
     line = pyqtSignal(str)
     cnt = 0
 
+    ENCODING = locale.getpreferredencoding(False)
+
     def __init__(self):
         super(InputHandler, self).__init__()
-        self.sockets = {sys.stdin.fileno() : [sys.stdin]}
+        self.sockets = {sys.stdin.fileno() : [sys.stdin.detach()]}
         self.notifiers = []
         for s in self.sockets.keys():
             n = QSocketNotifier(s, QSocketNotifier.Read)
@@ -285,7 +288,7 @@ class InputHandler(QObject):
 
     def activated(self, fd):
         s = self.sockets[fd][0]
-        line = s.readline()
+        line = s.readline().decode(self.ENCODING, 'ignore')
         InputHandler.cnt += 1
         if len(line) == 0:
             # at eof
