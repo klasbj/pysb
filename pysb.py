@@ -335,11 +335,15 @@ def handle_input(line):
                 t = DwmWsArea
             elif args[5] == 'dwm-lt':
                 t = DwmLtArea
-        a = t(floatd, weight)
-        area_map[id_] = a
-        if screen > len(bars):
-            print("ignoring area '{}', unknown screen '{}'.".format(id_, screen), file=sys.stderr)
-        bars[screen][dock].add_area(a)
+        if screen < 0:
+            # add to all current and future screens
+            Screen.add_area_to_all_screens(id_, dock, t, floatd, weight)
+        else:
+            a = t(floatd, weight)
+            area_map[id_] = a
+            if screen > len(Screen.screens):
+                print("ignoring area '{}', unknown screen '{}'.".format(id_, screen), file=sys.stderr)
+            Screen.screens[screen].bars[dock].add_area(a)
     elif cmd == 'rm_area':
         pass
     elif cmd == 'screen':
@@ -377,8 +381,17 @@ class BarPainter(QPainter):
 class Screen(object):
     desktop = None
     screens = []
+    areas_on_all_screens = []
 
     # this does not currently handle mirroring screens...
+
+    @staticmethod
+    def add_area_to_all_screens(id_, dock, area_type, floatd, weight):
+        Screen.areas_on_all_screens.append( (id_, dock, area_type,floatd, weight) )
+        for i, s in enumerate(Screen.screens):
+            a = area_type(floatd, weight)
+            area_map[id_.replace('#', str(i))] = a
+            s.bars[dock].add_area(a)
 
     @staticmethod
     def init(desktop):
@@ -408,6 +421,10 @@ class Screen(object):
                 s = Screen(geom)
                 Screen.screens.append(s)
                 s.show()
+                for id_, dock, area_type, floatd, weight in Screen.areas_on_all_screens:
+                    a = area_type(floatd, weight)
+                    area_map[id_.replace('#', str(si))] = a
+                    s.bars[dock].add_area(a)
 
     def __init__(self, geometry):
         self.geometry = geometry
