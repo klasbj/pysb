@@ -24,7 +24,6 @@ NORMAL_FG_COLOR = "#9e9e9e"
 LOW_FG_COLOR = "#4e4e4e"
 
 timer = None
-bars = []
 
 @unique
 class Dock(IntEnum):
@@ -375,6 +374,59 @@ class BarPainter(QPainter):
         self.restore()
         return (x+ARROW_WIDTH+8, x + ARROW_WIDTH + w + ARROW_WIDTH)
 
+class Screen(object):
+    desktop = None
+    screens = []
+
+    # this does not currently handle mirroring screens...
+
+    @staticmethod
+    def init(desktop):
+        Screen.desktop = desktop
+        Screen.desktop.resized.connect(Screen.handle_resized)
+        Screen.desktop.screenCountChanged.connect(Screen.handle_screenCountChanged)
+        numScreens = Screen.desktop.screenCount()
+        Screen.handle_screenCountChanged(numScreens) # create all screens
+
+    @staticmethod
+    def handle_resized(screen):
+        geom = Screen.desktop.screenGeometry(screen)
+        Screen.screens[screen].resize(geom)
+
+    @staticmethod
+    def handle_screenCountChanged(count):
+        diff = count - len(Screen.screens)
+        if diff < 0:
+            # remove screens eventually
+            for s in Screen.screens[diff:]:
+                s.hide()
+                # remove areas??
+            Screen.screens = Screen.screens[:diff]
+        elif diff > 0:
+            for si in range(len(Screen.screens), count):
+                geom = Screen.desktop.screenGeometry(si)
+                s = Screen(geom)
+                Screen.screens.append(s)
+                s.show()
+
+    def __init__(self, geometry):
+        self.geometry = geometry
+        self.bars = dict()
+        self.bars[Dock.top] = Bar(self.geometry.left(), self.geometry.top(), self.geometry.width(), BAR_HEIGHT, flags=Qt.Widget | Qt.BypassWindowManagerHint)
+        self.bars[Dock.bottom] = Bar(self.geometry.left(), self.geometry.bottom()-BAR_HEIGHT+1, self.geometry.width(), BAR_HEIGHT, flags=Qt.Widget | Qt.BypassWindowManagerHint)
+
+    def show(self):
+        for b in self.bars.values():
+            b.show()
+
+    def hide(self):
+        for b in self.bars.values():
+            b.hide()
+
+    def resize(self, geometry):
+        self.geometry = geometry
+        self.bars[Dock.top].resize_bar(self.geometry.left(), self.geometry.top(), self.geometry.width(), BAR_HEIGHT)
+        self.bars[Dock.bottom].resize_bar(self.geometry.left(), self.geometry.bottom()-BAR_HEIGHT+1, self.geometry.width(), BAR_HEIGHT)
 
 class Bar(QWidget):
     TOP = 1
@@ -386,6 +438,10 @@ class Bar(QWidget):
         self.resize(w, h)
         self.text = None
         self.areas = []
+
+    def resize_bar(self, x, y, w, h):
+        self.move(x,y)
+        self.resize(w, h)
 
     def add_area(self, area):
         self.areas.append(area)
@@ -479,16 +535,7 @@ def main():
     desktop = app.desktop()
     sgeom = desktop.screenGeometry()
 
-    global bars
-    bars.append(dict())
-    bars[0][Dock.top] = Bar(sgeom.left(), sgeom.top(), sgeom.width(), BAR_HEIGHT, flags=Qt.Widget | Qt.BypassWindowManagerHint)
-    bars[0][Dock.bottom] = Bar(sgeom.left(), sgeom.bottom()-BAR_HEIGHT+1, sgeom.width(), BAR_HEIGHT, flags=Qt.Widget | Qt.BypassWindowManagerHint)
-
-    print(bars, file=sys.stderr)
-
-    for bar in bars[0].values():
-        bar.show()
-        #bar.lower()
+    Screen.init(desktop)
 
     io.line.connect(handle_input)
 
