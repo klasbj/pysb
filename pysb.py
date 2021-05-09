@@ -83,7 +83,7 @@ class ImageToken(Token):
     def width(self, painter):
         return self.img.width()
     def render(self, painter, x, y, h):
-        painter.drawImage(x, h/2.0 - self.img.height()/2.0, self.img)
+        painter.drawImage(x, int(h/2.0 - self.img.height()/2.0), self.img)
 
 class FgChangeToken(Token):
     def __init__(self, fg):
@@ -181,7 +181,7 @@ class DwmLtArea(Area):
         return self.data.width()
 
     def render(self, painter, x, y, h):
-        painter.drawImage(x, h/2.0 - self.data.height()/2.0, self.data)
+        painter.drawImage(x, int(h/2.0 - self.data.height()/2.0), self.data)
 
 class DwmWsArea(Area):
     def __init__(self, floatd, weight):
